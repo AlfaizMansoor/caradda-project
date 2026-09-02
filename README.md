@@ -1,14 +1,11 @@
-# Welcome to your Lovable project
+# Welcome to my CarAdda project.
 
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+## First real project
+- Build the project primarily for **testing, learning, and hands-on implementation.**
+- Development was completed through a **collaborative workflow involving my own implementation and AI-assisted development**, with AI used only to enhance and refine certain parts of the project.
+- **Deployment and environment setup were fully handled by me**, including configuration, containerization, and deployment-related tasks.
+- Focused on understanding and implementing the complete lifecycle: **Development -> Configuration -> Containerization -> Deployment -> Testing** 
+- **Deployment and environment setup**
 
 ## Development
 
