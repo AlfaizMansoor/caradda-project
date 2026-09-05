@@ -44,6 +44,9 @@ jobs:
       - name: Typecheck
         run: bunx @typescript/native-preview --noEmit
 
+      - name: Set lowercase repo name
+        run: echo "IMAGE_REPO=$(echo ghcr.io/${{github.repository}} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Verify production build
         run: bun run build
         env:
@@ -92,7 +95,7 @@ jobs:
 
       - name: Upload scan results to Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-results.sarif
 
