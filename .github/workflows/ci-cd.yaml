@@ -25,7 +25,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env: 
+env:
+  TAG: ${{github.sha}}
+  IMAGE_NAME: ${{github.sha}}
+  IMAGE: ${{github.sha}}
 
 jobs:
   test:
@@ -43,7 +46,7 @@ jobs:
         run: bunx @typescript/native-preview --noEmit
 
       - name: Set lowercase repo name
-        run: echo "IMAGE_REPO=$(echo ghcr.io/${{github.repository}} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+        run: echo "IMAGE_NAME=$(echo ghcr.io/${{github.repository}} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
       - name:  build image
         run: docker buildx build --tag ${{env.IMAGE_NAME}}:${{github.sha}}.
