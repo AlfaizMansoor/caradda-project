@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE: ghcr.io/${{ github.repository }} # or your-registry/caradda
+  IMAGE: ghcr.io/${{ env.IMAGE_NAME }} # or your-registry/caradda
   TAG: ${{ github.sha }}
 
 jobs:
