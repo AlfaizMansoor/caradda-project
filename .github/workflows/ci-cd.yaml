@@ -42,9 +42,6 @@ jobs:
       - name: Typecheck
         run: bunx @typescript/native-preview --noEmit
 
-      - name: Typecheck
-        run: bun run typecheck
-
       - name: Verify production build
         run: bun run build
         
