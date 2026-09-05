@@ -94,6 +94,7 @@ jobs:
           exit-code: "1"
           format: sarif
           output: trivy-results.sarif
+          trivyignores: .trivyignore
 
       - name: Upload scan results to Security tab
         if: always()
