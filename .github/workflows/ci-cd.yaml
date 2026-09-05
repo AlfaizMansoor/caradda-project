@@ -40,10 +40,14 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Typecheck
-        run: bunx tsgo --noEmit
+        run: bunx @typescript/native-preview --noEmit
+
+      - name: Typecheck
+        run: bun run typecheck
 
       - name: Verify production build
         run: bun run build
+        
         env:
           # Build-time public values only — real values come from repo secrets
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
