@@ -1,4 +1,4 @@
-# CarAdda CI/CD — test, build, and deploy securely.
+#CarAdda CI/CD — test, build, and deploy securely.
 #
 # Required GitHub repo secrets (Settings → Secrets and variables → Actions):
 #   VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, VITE_SUPABASE_PROJECT_ID
@@ -15,7 +15,6 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch: 
 
 permissions:
   contents: read
@@ -26,9 +25,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  TAG: ${{github.sha}}
-  IMAGE_NAME: ${{github.sha}}
-  IMAGE: ${{github.sha}}
+  TAG: ${{ github.sha }}
 
 jobs:
   test:
@@ -43,13 +40,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Typecheck
-        run: bunx @typescript/native-preview --noEmit
-
-      - name: Set lowercase repo name
-        run: echo "IMAGE_NAME=$(echo ghcr.io/${{github.repository}} | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
-
-      - name:  build image
-        run: docker buildx build --tag ${{env.IMAGE_NAME}}:${{github.sha}}.
+        run: bunx tsgo --noEmit
 
       - name: Verify production build
         run: bun run build
@@ -63,6 +54,8 @@ jobs:
     name: Build & scan Docker image
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.image.outputs.image }}
     steps:
       - uses: actions/checkout@v4
 
@@ -75,12 +68,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.REGISTRY_TOKEN || secrets.GITHUB_TOKEN }}
 
+      - name: Set lowercase image name
+        id: image
+        run: echo "image=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
       - name: Build image (no push yet)
         uses: docker/build-push-action@v6
         with:
           context: .
           load: true
-          tags: ${{ env.IMAGE }}:${{ env.TAG }}
+          tags: ${{ steps.image.outputs.image }}:${{ env.TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -91,7 +88,7 @@ jobs:
       - name: Vulnerability scan (fails on CRITICAL/HIGH)
         uses: aquasecurity/trivy-action@v0.35.0
         with:
-          image-ref: ${{ env.IMAGE }}:${{ env.TAG }}
+          image-ref: ${{ steps.image.outputs.image }}:${{ env.TAG }}
           severity: CRITICAL,HIGH
           exit-code: "1"
           format: sarif
@@ -99,7 +96,7 @@ jobs:
 
       - name: Upload scan results to Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
 
@@ -109,8 +106,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.IMAGE }}:${{ env.TAG }}
-            ${{ env.IMAGE }}:latest
+            ${{ steps.image.outputs.image }}:${{ env.TAG }}
+            ${{ steps.image.outputs.image }}:latest
           cache-from: type=gha
           build-args: |
             VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
@@ -134,5 +131,5 @@ jobs:
 
       - name: Deploy image to cluster
         run: |
-          kubectl set image deployment/caradda caradda=${{ env.IMAGE }}:${{ env.TAG }}
+          kubectl set image deployment/caradda caradda=${{ needs.build.outputs.image }}:${{ env.TAG }}
           kubectl rollout status deployment/caradda --timeout=180s
